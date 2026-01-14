@@ -1,6 +1,7 @@
-﻿using Proiect_POO;
+﻿using Infrastructura.Persistence;
+using Proiect_POO;
 
-namespace Infrastructura;
+namespace Infrastructura.Repositories;
 
 // Extindem clasa generica specificand ca lucram cu 'User'
 public class UserRepositoryJson : JsonFileStocare<User>

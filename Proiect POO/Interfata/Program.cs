@@ -2,7 +2,7 @@
 using Interfata.Menus;
 using Interfata.Input;
 using Interfata.Output;
-using Infrastructura;
+using Infrastructura.Repositories;
 using Proiect_POO; // Core
 
 // 1. Setup Infrastructura (Repository-uri)

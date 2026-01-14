@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using Proiect_POO; // Referinta catre Core pentru entitati daca e nevoie
 
-namespace Infrastructura;
+namespace Infrastructura.Persistence;
 
 // Aceasta clasa este GENERICĂ. T poate fi User, Abonament, Parcare, etc.
 // where T : class constrange T sa fie un tip de referinta.

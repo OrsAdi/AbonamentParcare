@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Infrastructura;
+namespace Infrastructura.Configuration;
 
 public static class JsonOptionsFactory
 {

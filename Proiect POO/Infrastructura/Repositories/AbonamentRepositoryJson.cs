@@ -1,6 +1,6 @@
 ﻿using Proiect_POO;
 
-namespace Infrastructura;
+namespace Infrastructura.Repositories;
 
 public class AbonamentRepositoryJson : JsonFileStocare<Abonament>
 {
