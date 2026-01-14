@@ -1,5 +1,5 @@
-﻿using Core.Entities;
-using Core.Services;
+﻿using Proiect_POO.Entities;
+using Proiect_POO.Services;
 
 namespace Interfata.Auth;
 

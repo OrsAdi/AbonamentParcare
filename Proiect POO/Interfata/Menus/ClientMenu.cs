@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+﻿using Proiect_POO.Entities;
 
 namespace Interfata.Menus;
 

@@ -7,4 +7,9 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Infrastructura\Infrastructura.csproj" />
+      <ProjectReference Include="..\Proiect POO\Core.csproj" />
+    </ItemGroup>
+
 </Project>

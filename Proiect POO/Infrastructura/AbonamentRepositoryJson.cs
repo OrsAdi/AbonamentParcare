@@ -1,6 +1,10 @@
-﻿namespace Infrastructura;
+﻿using Proiect_POO;
 
-public class AbonamentRepositoryJson
+namespace Infrastructura;
+
+public class AbonamentRepositoryJson : JsonFileStocare<Abonament>
 {
-    
+    public AbonamentRepositoryJson() : base("abonamente.json")
+    {
+    }
 }
