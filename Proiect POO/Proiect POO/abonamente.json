@@ -1,0 +1,9 @@
+﻿[
+  {
+    "Id": 1,
+    "UsernameClient": "client1",
+    "Tip": "Standard",
+    "Pret": 100,
+    "Activ": true
+  }
+]
