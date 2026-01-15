@@ -1,4 +1,5 @@
 ﻿using Proiect_POO;
+using Infrastructura.Repositories;
 
 namespace Interfata.Menus;
 
@@ -6,32 +7,26 @@ public class ClientMenu
 {
     private readonly Client _client;
     private readonly SubscriptionManager _manager;
-
-    public ClientMenu(Client client, SubscriptionManager manager)
+    private readonly UserRepositoryJson _userRepository;
+    public ClientMenu(Client client, SubscriptionManager manager,  UserRepositoryJson userRepository)
     {
         _client = client;
         _manager = manager;
+        _userRepository = userRepository;
     }
 
     public void Show()
     {
-        // =============================================================
-        // AICI DAI PASTE LA TOT CODUL TĂU DE CLIENT
-        // =============================================================
-
-        // ATENȚIE:
-        // 1. Unde aveai variabila 'c' sau 'client' -> folosește '_client'
-        // 2. Unde aveai variabila 'manager' -> folosește '_manager'
+        
 
         
         
         Console.WriteLine($"BINE AI VENIT CLIENT: {_client.Username}");
 
-        // Codul tău original (exemplu):
         Console.WriteLine("CLIENT – abonamente disponibile:");
         _manager.Tipuri.ForEach(Console.WriteLine);
         
-        // ... restul logicii tale de cumpărare ...
+        // logica de cumparare
     
         while (true)
         {
@@ -49,7 +44,7 @@ public class ClientMenu
                     AfiseazaAbonamenteClient(_client);
                     break;
                 case "2":
-                    CumparaAbonamentMeniu(_client, _manager);
+                    CumparaAbonament();
                     break;
                 case "3":
                     return;
@@ -80,64 +75,66 @@ public class ClientMenu
         }
     }
     
-    static void CumparaAbonamentMeniu(Client client, SubscriptionManager manager)
+    
+   private void CumparaAbonament()
     {
-        Console.WriteLine("\n--- ALEGE PARCAREA DORITA ---");
+        Console.WriteLine("\n--- OFERTE DISPONIBILE ---");
         
-        if (manager.Parcari.Count == 0)
+        if (_manager.Tipuri.Count == 0)
         {
-            Console.WriteLine("Nu exista parcari in sistem.");
+            Console.WriteLine("Nu exista oferte configurate momentan.");
+            Wait();
             return;
         }
 
-        for (int i = 0; i < manager.Parcari.Count; i++)
+        for (int i = 0; i < _manager.Tipuri.Count; i++)
         {
-            Console.WriteLine($"{i + 1}. {manager.Parcari[i].Nume} (Zona {manager.Parcari[i].Zona})");
+            var tip = _manager.Tipuri[i];
+            
+            Console.WriteLine($"{i + 1}. [Zona {tip.ZonaPermisa}] {tip.Nume} - Pret: {tip.Pret} RON ({tip.ValabilitateZile} zile)");
         }
 
-        Console.Write("\nIntrodu numarul parcarii: ");
-        if (int.TryParse(Console.ReadLine(), out int indexParcare) && indexParcare > 0 && indexParcare <= manager.Parcari.Count)
+        Console.WriteLine("\n------------------------------------------------");
+        Console.Write("Alege numarul ofertei (sau 0 pentru anulare): ");
+        
+        string input = Console.ReadLine();
+        
+        if (int.TryParse(input, out int index) && index > 0 && index <= _manager.Tipuri.Count)
         {
-            var parcareAleasa = manager.Parcari[indexParcare - 1];
-            Console.WriteLine($"\nAi ales parcarea: {parcareAleasa.Nume}. Cautam oferte disponibile...");
+            var tipAles = _manager.Tipuri[index - 1];
 
-            var toateAbonamenteleZona = manager.Tipuri
-                .Where(t => t.ZonaPermisa == parcareAleasa.Zona)
-                .ToList();
+            Console.WriteLine($"\nAi selectat: {tipAles.Nume} pentru Zona {tipAles.ZonaPermisa}");
+            Console.WriteLine("Se proceseaza...");
+            Thread.Sleep(800); 
 
-            var oferteValide = toateAbonamenteleZona
-                .Where(tip => !client.Abonamente.Any(a => a.Tip.Nume == tip.Nume && a.Activ && !a.EsteExpirat()))
-                .ToList();
+            bool succes = _manager.CumparaAbonament(_client, tipAles);
 
-            if (oferteValide.Count == 0)
+            if (succes)
             {
-                Console.WriteLine($"\nAi deja toate abonamentele disponibile pentru Zona {parcareAleasa.Zona} (sau nu exista oferte).");
-                return;
-            }
-
-            Console.WriteLine($"\n--- OFERTE DISPONIBILE PENTRU TINE (ZONA {parcareAleasa.Zona}) ---");
-            for (int i = 0; i < oferteValide.Count; i++)
-            {
-                Console.WriteLine($"{i + 1}. {oferteValide[i]}");
-            }
-
-            Console.Write("\nAlege abonamentul dorit: ");
-            if (int.TryParse(Console.ReadLine(), out int indexAb) && indexAb > 0 && indexAb <= oferteValide.Count)
-            {
-                var tipAles = oferteValide[indexAb - 1];
-                manager.CumparaAbonament(client, tipAles);
-
-                Console.WriteLine($"\nSucces! Ai cumparat abonamentul {tipAles.Nume}.");
-                Console.WriteLine($"Valabil pana la: {DateTime.Now.AddDays(30):dd/MM/yyyy}");
-            }
-            else
-            {
-                Console.WriteLine("Optiune invalida.");
+                Console.WriteLine("SUCCES! Abonamentul a fost activat.");
+                
+                try 
+                {
+                    _userRepository.Salveaza(_manager.Utilizatori);
+                    Console.WriteLine("Datele au fost salvate.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Atentie: Eroare la salvarea pe disc: {ex.Message}");
+                }
             }
         }
-        else
+        else if (input != "0")
         {
-            Console.WriteLine("Parcare invalida.");
+            Console.WriteLine("Numar invalid.");
         }
+        
+        Wait();
+    }
+    
+    private void Wait()
+    {
+        Console.WriteLine("\nApasa Enter pentru a continua...");
+        Console.ReadLine();
     }
 }

@@ -2,15 +2,37 @@
 
 public class SubscriptionManager
 {
-    public List<Parcare> Parcari { get; } = new();
-    public List<TipAbonament> Tipuri { get; } = new();
-    public List<User> Utilizatori { get; } = new();
+    public List<User> Utilizatori { get; } = new List<User>();
+    public List<Parcare> Parcari { get; } = new List<Parcare>();
+    public List<TipAbonament> Tipuri { get; } = new List<TipAbonament>();
 
-    public void AdaugaParcare(Parcare p) => Parcari.Add(p);
-    public void AdaugaTip(TipAbonament t) => Tipuri.Add(t);
-
-    public void CumparaAbonament(Client client, TipAbonament tip)
+    public void AdaugaParcare(Parcare parcare)
     {
-        client.Abonamente.Add(new Abonament(tip));
+        Parcari.Add(parcare);
+    }
+
+    public void AdaugaTip(TipAbonament tip)
+    {
+        Tipuri.Add(tip);
+    }
+
+    public bool CumparaAbonament(Client client, TipAbonament tip)
+    {
+   
+        bool areDejaAcestTip = client.Abonamente.Any(a => 
+                a.Activ && 
+                a.Tip.Nume == tip.Nume &&      
+                !a.EsteExpirat()               
+        );
+
+        if (areDejaAcestTip)
+        {
+            Console.WriteLine($"[!] Ai deja un abonament activ de tipul '{tip.Nume}'!");
+            return false;
+        }
+
+        var abonamentNou = new Abonament(tip);
+        client.AdaugaAbonament(abonamentNou);
+        return true;
     }
 }

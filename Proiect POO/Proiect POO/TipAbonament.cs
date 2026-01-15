@@ -1,21 +1,30 @@
 ﻿using System.Text.Json.Serialization;
+
 namespace Proiect_POO;
 
 public class TipAbonament
 {
-    public string Nume { get; }
-    public decimal Pret { get; }
-    public int ValabilitateZile { get; }
-    public string ZonaPermisa { get; }
-    [JsonConstructor]
-    public TipAbonament(string nume, decimal pret, int zile, string zona)
+    [JsonInclude]
+    public string Nume { get; private set; }
+    
+    [JsonInclude]
+    public decimal Pret { get; private set; }
+    
+    [JsonInclude]
+    public int ValabilitateZile { get; private set; }
+    
+    [JsonInclude]
+    public string ZonaPermisa { get; private set; }
+
+    public TipAbonament(string nume, decimal pret, int valabilitateZile, string zonaPermisa)
     {
         Nume = nume;
         Pret = pret;
-        ValabilitateZile = zile;
-        ZonaPermisa = zona;
+        ValabilitateZile = valabilitateZile;
+        ZonaPermisa = zonaPermisa;
     }
 
-    public override string ToString()
-        => $"{Nume} | {Pret} RON | {ValabilitateZile} zile | Zona {ZonaPermisa}";
+    public TipAbonament() { }
+
+    public override string ToString() => $"{Nume} | {Pret} RON | {ValabilitateZile} zile | Zona {ZonaPermisa}";
 }

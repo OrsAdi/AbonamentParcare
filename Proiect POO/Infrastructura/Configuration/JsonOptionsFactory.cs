@@ -9,9 +9,8 @@ public static class JsonOptionsFactory
     {
         return new JsonSerializerOptions
         {
-            WriteIndented = true, // Sa arate frumos in fisier
+            WriteIndented = true, 
             PropertyNameCaseInsensitive = true,
-            // Foarte important pentru a salva derivate (Admin/Client) in lista de baza (User)
             UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement 
         };
     }

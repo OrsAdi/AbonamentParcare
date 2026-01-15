@@ -9,59 +9,43 @@ public class AdminMenu
     private readonly Admin _admin;
     private readonly SubscriptionManager _manager;
     private readonly UserRepositoryJson _userRepositoryJson;
+    private readonly ParcareRepositoryJson _parcareRepo;
+    private readonly TipAbonamentRepositoryJson _tipuriRepo;
 
-    public AdminMenu(Admin admin, SubscriptionManager manager, UserRepositoryJson userRepositoryJson)
+    public AdminMenu(Admin admin, SubscriptionManager manager, UserRepositoryJson userRepositoryJson, ParcareRepositoryJson parcareRepo, TipAbonamentRepositoryJson tipuriRepo)
     {
         _admin = admin;
         _manager = manager;
         _userRepositoryJson = userRepositoryJson;
+        _parcareRepo = parcareRepo;
+        _tipuriRepo = tipuriRepo;
     }
 
     public void Show()
     {
-        
-        
-        
-        // =============================================================
-        // AICI DAI PASTE LA TOT CODUL TĂU DE ADMIN (cele 100 de linii)
-        // =============================================================
-        
-        // ATENȚIE:
-        // 1. Unde aveai variabila 'user' sau 'admin' -> folosește '_admin'
-        // 2. Unde aveai variabila 'manager' -> folosește '_manager'
-        
-        // Exemplu (codul tău probabil arată cam așa):
         Console.WriteLine($"BINE AI VENIT ADMIN: {_admin.Username}");
         
         while(true)
         {
             Console.Clear();
             Console.WriteLine($"--- PANOU ADMIN ({_admin.Username}) ---");
-            Console.WriteLine("1. Vezi toate parcarile");
-            Console.WriteLine("2. Vezi tipurile de abonament existente");
-            Console.WriteLine("3. ADAUGA un tip nou de abonament");
-            Console.WriteLine("4. ADAUGA o parcare noua");
-            Console.WriteLine("5. Logout");
-            Console.Write("Alege: ");
+            Console.WriteLine("1. GESTIONARE PARCARI (Adauga/Sterge)");
+            Console.WriteLine("2. GESTIONARE ABONAMENTE (Adauga/Sterge)");
+            Console.WriteLine("0. Iesire");
+            Console.Write("Optiune: ");
             var optiune = Console.ReadLine();
 
             switch (optiune)
             {
                 case "1":
                     Console.WriteLine("\nPARCARI:");
-                    _manager.Parcari.ForEach(Console.WriteLine);
+                    MeniuParcari();
                     break;
                 case "2":
-                    Console.WriteLine("\nTIPURI ABONAMENT:");
-                    _manager.Tipuri.ForEach(Console.WriteLine);
+                    Console.WriteLine("\nMeniu Tipuri:");
+                    MeniuTipuri();
                     break;
-                case "3":
-                    AdaugaTipAbonament(_manager);
-                    break;
-                case "4":
-                    AdaugaParcare(_manager);
-                    break;
-                case "5":
+                case "0":
                     return;
                 default:
                     Console.WriteLine("Optiune invalida!");
@@ -71,6 +55,81 @@ public class AdminMenu
             Console.ReadKey();
         }
     }
+    
+    
+    private void MeniuParcari()
+    {
+        Console.WriteLine("\n--- PARCARI ---");
+        _manager.Parcari.ForEach(p => Console.WriteLine($"- {p}"));
+        
+        Console.WriteLine("\n[A]dauga parcare | [S]terge parcare | [I]napoi");
+        var key = Console.ReadLine()?.ToUpper();
+
+        if (key == "A")
+        {
+            Console.Write("Nume: "); string nume = Console.ReadLine();
+            Console.Write("Adresa: "); string adresa = Console.ReadLine();
+            Console.Write("Locuri: "); int.TryParse(Console.ReadLine(), out int locuri);
+
+            var p = new Parcare(nume, adresa, locuri);
+            _manager.Parcari.Add(p); // 1. Memorie
+            _parcareRepo.Salveaza(_manager.Parcari); // 2. Fisier
+            Console.WriteLine("Parcare salvata!");
+        }
+        else if (key == "S")
+        {
+            Console.Write("Numele parcarii de sters: ");
+            string nume = Console.ReadLine();
+            var deSters = _manager.Parcari.FirstOrDefault(p => p.Nume == nume);
+            
+            if (deSters != null) {
+                _manager.Parcari.Remove(deSters);
+                _parcareRepo.Salveaza(_manager.Parcari);
+                Console.WriteLine("Parcare stersa!");
+            }
+        }
+        Wait();
+    }
+
+    private void MeniuTipuri()
+    {
+        Console.WriteLine("\n--- TIPURI ABONAMENTE ---");
+        _manager.Tipuri.ForEach(t => Console.WriteLine($"- {t}"));
+
+        Console.WriteLine("\n[A]dauga tip | [S]terge tip | [I]napoi");
+        var key = Console.ReadLine()?.ToUpper();
+
+        if (key == "A")
+        {
+            Console.Write("Nume: "); string nume = Console.ReadLine();
+            Console.Write("Pret: "); decimal.TryParse(Console.ReadLine(), out decimal pret);
+            Console.Write("Zile: "); int.TryParse(Console.ReadLine(), out int zile);
+            Console.Write("Zona: "); string zona = Console.ReadLine();
+
+            var t = new TipAbonament(nume, pret, zile, zona);
+            _manager.Tipuri.Add(t);
+            _tipuriRepo.Salveaza(_manager.Tipuri); 
+            Console.WriteLine("Tip abonament salvat!");
+        }
+        else if (key == "S")
+        {
+            Console.Write("Numele tipului de sters: ");
+            string nume = Console.ReadLine();
+            var deSters = _manager.Tipuri.FirstOrDefault(t => t.Nume == nume);
+
+            if (deSters != null)
+            {
+                _manager.Tipuri.Remove(deSters);
+                _tipuriRepo.Salveaza(_manager.Tipuri);
+                Console.WriteLine("Tip sters!");
+            }
+        }
+        Wait();
+    }
+    
+    private void Wait() { Console.WriteLine("Enter..."); Console.ReadLine(); }
+
+    
 
     static void AdaugaParcare(SubscriptionManager manager)
     {

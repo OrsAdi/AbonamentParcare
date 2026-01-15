@@ -1,18 +1,23 @@
-﻿namespace Proiect_POO;
+﻿using System.Text.Json.Serialization;
+namespace Proiect_POO;
 
 public class Parcare
 {
-    public string Nume { get; }
-    public string Zona { get; }
-    public int Capacitate { get; }
+    [JsonInclude]
+    public string Nume { get; private set; }
+    [JsonInclude]
+    public string Adresa { get; private set; }
+    [JsonInclude]
+    public int LocuriTotale { get; private set; }
 
-    public Parcare(string nume, string zona, int capacitate)
+    public Parcare(string nume, string adresa, int locuriTotale)
     {
         Nume = nume;
-        Zona = zona;
-        Capacitate = capacitate;
+        Adresa = adresa;
+        LocuriTotale = locuriTotale;
     }
 
+    public Parcare() { }
     public override string ToString()
-        => $"{Nume} | Zona: {Zona} | Capacitate: {Capacitate}";
+        => $"{Nume} | Zona: {Adresa} | Capacitate: {LocuriTotale}";
 }

@@ -1,21 +1,17 @@
 ﻿using System.Text.Json;
 using Infrastructura.Configuration;
-using Proiect_POO; // Referinta catre Core pentru entitati daca e nevoie
+using Proiect_POO; 
 
 namespace Infrastructura.Persistence;
 
-// Aceasta clasa este GENERICĂ. T poate fi User, Abonament, Parcare, etc.
-// where T : class constrange T sa fie un tip de referinta.
 public class JsonFileStocare<T> where T : class
 {
     private readonly string _filePath;
     
-    // Folosim factory-ul tau pentru optiuni consistente
     private readonly JsonSerializerOptions _options;
 
     public JsonFileStocare(string fileName)
     {
-        // Setam calea relativa catre fisier
         _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
         _options = JsonOptionsFactory.Create(); 
     }
@@ -34,7 +30,6 @@ public class JsonFileStocare<T> where T : class
         }
         catch (Exception ex)
         {
-            // Aici ar trebui sa folosim Logger-ul, dar momentan scriem la consola de debug
             System.Diagnostics.Debug.WriteLine($"Eroare la citire JSON {_filePath}: {ex.Message}");
             return new List<T>();
         }
