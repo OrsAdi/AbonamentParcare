@@ -1,4 +1,5 @@
-﻿namespace Proiect_POO;
+﻿using System.Text.Json.Serialization;
+namespace Proiect_POO;
 
 public class TipAbonament
 {
@@ -6,7 +7,7 @@ public class TipAbonament
     public decimal Pret { get; }
     public int ValabilitateZile { get; }
     public string ZonaPermisa { get; }
-
+    [JsonConstructor]
     public TipAbonament(string nume, decimal pret, int zile, string zona)
     {
         Nume = nume;

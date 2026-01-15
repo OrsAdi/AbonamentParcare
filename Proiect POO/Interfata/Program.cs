@@ -8,14 +8,14 @@ class Program
 {
     static void Main(string[] args)
     {
-        
+
         // 1. CONFIGURARE (Se execută o singură dată la start)
         var consoleOut = new ConsoleOutput();
         var consoleIn = new ConsoleInput();
-        
+
         // Setup Date
         var manager = new SubscriptionManager();
-        
+
         // Încărcare din repository (sau date de test)
         var userRepo = new UserRepositoryJson();
         var users = userRepo.Incarca();
@@ -23,12 +23,11 @@ class Program
         if (users.Count == 0)
         {
             users.Add(new Admin("admin", "admin"));
-            users.Add(new Client("client", "1234"));
             userRepo.Salveaza(users);
         }
 
         // Populăm managerul
-        foreach(var u in users) manager.Utilizatori.Add(u);
+        foreach (var u in users) manager.Utilizatori.Add(u);
 
         // Date parcare (hardcodate pt exemplu)
         manager.AdaugaParcare(new Parcare("Central Parking", "A", 100));
@@ -49,45 +48,133 @@ class Program
             Console.Clear(); // Curăță ecranul ca să arate proaspăt
             consoleOut.WriteLine("=== SISTEM PARCARE ===");
             consoleOut.WriteLine("1. Autentificare");
-            consoleOut.WriteLine("2. Iesire din aplicatie");
+            consoleOut.WriteLine("2. Inregistrare");
+            consoleOut.WriteLine("3. Iesire");
             consoleOut.Write("Alege optiunea: ");
-            
+
             var comanda = consoleIn.ReadLine();
 
-            if (comanda == "2")
+            switch (comanda)
             {
-                consoleOut.WriteLine("La revedere!");
-                break; // Sparge bucla while și închide programul
-            }
-            else if (comanda == "1")
-            {
-                // Încercăm logarea
-                var user = LoginService.Login(manager.Utilizatori);
-
-                if (user != null)
-                {
-                    consoleOut.WriteLine($"Bine ai venit, {user.Username}!");
-                    Thread.Sleep(1000); // Mică pauză estetică
-
-                    // Deschidem meniul specific
-                    // Când metoda Show() se termină (la logout), revenim aici
-                    if (user is Admin adminUser)
-                    {
-                        new AdminMenu(adminUser, manager).Show();
-                    }
-                    else if (user is Client clientUser)
-                    {
-                        new ClientMenu(clientUser, manager).Show();
-                    }
-                }
-                else
-                {
-                    consoleOut.WriteLine("Autentificare esuata. Apasa Enter pentru a continua...");
-                    consoleIn.ReadLine();
-                }
+                case "1":
+                    ProcesLogin(manager, userRepo);
+                    break;
+                case "2":
+                    ProcesInregistrare(manager, userRepo);
+                    break;
+                case "3":
+                    consoleOut.WriteLine("La revedere!");
+                    return;
+                default:
+                    consoleOut.WriteLine("Optiune invalida");
+                    Thread.Sleep(1000);
+                    break;
             }
         }
     }
+
+    static void ProcesLogin(SubscriptionManager manager, UserRepositoryJson userRepo)
+    {
+        var user = LoginService.Login(manager.Utilizatori);
+        if (user != null)
+        {
+            Console.WriteLine($"Bine ai venit, {user.Username}!");
+            Thread.Sleep(1000);
+            
+            if(user is Admin adminUser)
+            {
+                new AdminMenu(adminUser,manager,userRepo).Show();
+            }
+            else if (user is Client clientUser)
+            {
+                new ClientMenu(clientUser,manager).Show();
+            }
+        }
+        else
+        {
+            Console.WriteLine("Apasa Enter pentru a contiuna..");
+            Console.ReadLine();
+        }
+
+    }
+
+    static void ProcesInregistrare(SubscriptionManager manager, UserRepositoryJson userRepo)
+    {
+        Console.Clear();
+        Console.WriteLine("---CREARE CONT CLIENT---");
+        
+        Console.Write("Alege un Username:");
+        string username = Console.ReadLine();
+
+        if (manager.Utilizatori.Any(u => u.Username == username))
+        {
+            Console.WriteLine("Eroare: Acest username este deja luat!Incearcati altul");
+            Console.ReadLine();
+            return;
+        }
+        
+        Console.WriteLine("Alege o Parola: ");
+        string password = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            Console.WriteLine("Eroare: Datele nu pot fi goale");
+            Console.ReadLine();
+            return;
+        }
+        
+        var clientNou = new Client(username, password);
+        
+        manager.Utilizatori.Add(clientNou);
+
+        try
+        {
+            userRepo.Salveaza(manager.Utilizatori);
+            Console.WriteLine("Cont creat cu succes! Te poti autentifica acum");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Eraore la salvare: {e.Message}");
+            manager.Utilizatori.Remove(clientNou);
+        }
+        Console.WriteLine("Apasa Enter pentru a reveni la meniu..");
+        Console.ReadLine();
+    }
+
+    // if (comanda == "2")
+        //     {
+        //         consoleOut.WriteLine("La revedere!");
+        //         break; // Sparge bucla while și închide programul
+        //     }
+        //     else if (comanda == "1")
+        //     {
+        //         // Încercăm logarea
+        //         var user = LoginService.Login(manager.Utilizatori);
+        //
+        //         if (user != null)
+        //         {
+        //             consoleOut.WriteLine($"Bine ai venit, {user.Username}!");
+        //             Thread.Sleep(1000); // Mică pauză estetică
+        //
+        //             // Deschidem meniul specific
+        //             // Când metoda Show() se termină (la logout), revenim aici
+        //             if (user is Admin adminUser)
+        //             {
+        //                 new AdminMenu(adminUser, manager).Show();
+        //             }
+        //             else if (user is Client clientUser)
+        //             {
+        //                 new ClientMenu(clientUser, manager).Show();
+        //             }
+        //         }
+        //         else
+        //         {
+        //             consoleOut.WriteLine("Autentificare esuata. Apasa Enter pentru a continua...");
+        //             consoleIn.ReadLine();
+        //         }
+        //     }
+        // }
+    
     
     static void InitializareDateDemo(SubscriptionManager manager)
     {

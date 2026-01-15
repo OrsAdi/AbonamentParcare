@@ -1,4 +1,6 @@
 ﻿using Proiect_POO;
+using Infrastructura.Repositories;
+
 
 namespace Interfata.Menus;
 
@@ -6,11 +8,13 @@ public class AdminMenu
 {
     private readonly Admin _admin;
     private readonly SubscriptionManager _manager;
+    private readonly UserRepositoryJson _userRepositoryJson;
 
-    public AdminMenu(Admin admin, SubscriptionManager manager)
+    public AdminMenu(Admin admin, SubscriptionManager manager, UserRepositoryJson userRepositoryJson)
     {
         _admin = admin;
         _manager = manager;
+        _userRepositoryJson = userRepositoryJson;
     }
 
     public void Show()

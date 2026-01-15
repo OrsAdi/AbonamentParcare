@@ -1,5 +1,9 @@
-﻿namespace Proiect_POO;
+﻿using System.Text.Json.Serialization;
 
+namespace Proiect_POO;
+
+[JsonDerivedType(typeof(Admin), typeDiscriminator: "Admin")]
+[JsonDerivedType(typeof(Client), typeDiscriminator: "Client")]
 public abstract class User
 {
     public string Username { get; }
