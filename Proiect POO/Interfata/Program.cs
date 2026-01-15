@@ -1,52 +1,107 @@
-﻿using Interfata.Auth;
+﻿using Proiect_POO;
 using Interfata.Menus;
-using Interfata.Input;
-using Interfata.Output;
 using Infrastructura.Repositories;
-using Proiect_POO; // Core
+using Interfata.Input;
+using Interfata.Output; // Dacă folosești repository-uri, altfel șterge linia
 
-// 1. Setup Infrastructura (Repository-uri)
-var userRepo = new UserRepositoryJson();
-// var abonamentRepo = new AbonamentRepositoryJson();
-
-// 2. Setup UI Helpers
-var consoleIn = new ConsoleInput();
-var consoleOut = new ConsoleOutput();
-
-// 3. Setup Servicii (Presupunand ca colegii au facut AuthService care cere un repo)
-// Daca AuthService nu exista inca sau nu accepta repo, il simulam sau adaptam:
-// var authService = new AuthService(userRepo); 
-
-// Nota: LoginView trebuie adaptat sa primeasca si el Input/Output pentru a fi consistent
-// var loginView = new LoginView(authService, consoleOut, consoleIn);
-
-// MOMENTAN, pentru a testa codul tau de infrastructura direct:
-consoleOut.WriteLine("Incarcare utilizatori din JSON...");
-var users = userRepo.Incarca();
-
-if (users.Count == 0)
+class Program
 {
-    consoleOut.WriteLine("Nu s-au gasit useri. Se creeaza default admin/client...");
-    users.Add(new Admin("admin", "admin")); // Atentie: Asigura-te ca Admin are constructorul corect
-    users.Add(new Client("client", "client"));
-    userRepo.Salveaza(users); // Testam salvarea
-}
-
-// Logica de login simplificata pentru demo (sau folosesti LoginService-ul colegilor)
-var currentUser = LoginService.Login(users); // Folosind serviciul static din Core
-
-if (currentUser != null)
-{
-    if (currentUser is Admin)
+    static void Main(string[] args)
     {
-        new AdminMenu(currentUser, consoleOut, consoleIn).Show();
+        
+        // 1. CONFIGURARE (Se execută o singură dată la start)
+        var consoleOut = new ConsoleOutput();
+        var consoleIn = new ConsoleInput();
+        
+        // Setup Date
+        var manager = new SubscriptionManager();
+        
+        // Încărcare din repository (sau date de test)
+        var userRepo = new UserRepositoryJson();
+        var users = userRepo.Incarca();
+
+        if (users.Count == 0)
+        {
+            users.Add(new Admin("admin", "admin"));
+            users.Add(new Client("client", "1234"));
+            userRepo.Salveaza(users);
+        }
+
+        // Populăm managerul
+        foreach(var u in users) manager.Utilizatori.Add(u);
+
+        // Date parcare (hardcodate pt exemplu)
+        manager.AdaugaParcare(new Parcare("Central Parking", "A", 100));
+        manager.AdaugaParcare(new Parcare("Complex", "B", 100));
+        manager.AdaugaParcare(new Parcare("Isho", "C", 100));
+
+        manager.AdaugaTip(new TipAbonament("Standard", 150, 30, "A"));
+        manager.AdaugaTip(new TipAbonament("Premium", 300, 30, "A"));
+        manager.AdaugaTip(new TipAbonament("Standard", 100, 30, "B"));
+        manager.AdaugaTip(new TipAbonament("Premium", 300, 30, "B"));
+        manager.AdaugaTip(new TipAbonament("Standard", 200, 30, "C"));
+        manager.AdaugaTip(new TipAbonament("Premium", 300, 30, "C"));
+
+
+        // 2. BUCLA INFINITĂ (Aici este secretul interactivității)
+        while (true)
+        {
+            Console.Clear(); // Curăță ecranul ca să arate proaspăt
+            consoleOut.WriteLine("=== SISTEM PARCARE ===");
+            consoleOut.WriteLine("1. Autentificare");
+            consoleOut.WriteLine("2. Iesire din aplicatie");
+            consoleOut.Write("Alege optiunea: ");
+            
+            var comanda = consoleIn.ReadLine();
+
+            if (comanda == "2")
+            {
+                consoleOut.WriteLine("La revedere!");
+                break; // Sparge bucla while și închide programul
+            }
+            else if (comanda == "1")
+            {
+                // Încercăm logarea
+                var user = LoginService.Login(manager.Utilizatori);
+
+                if (user != null)
+                {
+                    consoleOut.WriteLine($"Bine ai venit, {user.Username}!");
+                    Thread.Sleep(1000); // Mică pauză estetică
+
+                    // Deschidem meniul specific
+                    // Când metoda Show() se termină (la logout), revenim aici
+                    if (user is Admin adminUser)
+                    {
+                        new AdminMenu(adminUser, manager).Show();
+                    }
+                    else if (user is Client clientUser)
+                    {
+                        new ClientMenu(clientUser, manager).Show();
+                    }
+                }
+                else
+                {
+                    consoleOut.WriteLine("Autentificare esuata. Apasa Enter pentru a continua...");
+                    consoleIn.ReadLine();
+                }
+            }
+        }
     }
-    else if (currentUser is Client)
+    
+    static void InitializareDateDemo(SubscriptionManager manager)
     {
-        new ClientMenu(currentUser).Show(); // Va trebui adaptat si ClientMenu similar cu AdminMenu
+        manager.Utilizatori.Add(new Admin("admin", "admin"));
+        manager.Utilizatori.Add(new Client("dragos", "1234"));
+        manager.Utilizatori.Add(new Client("client", "client"));
+
+        manager.AdaugaParcare(new Parcare("Central Parking", "A", 100));
+        manager.AdaugaParcare(new Parcare("Mall Parking", "B", 500));
+        manager.AdaugaParcare(new Parcare("Stadion Arena", "C", 2000));
+
+        manager.AdaugaTip(new TipAbonament("Standard", 100, 30, "B"));
+        manager.AdaugaTip(new TipAbonament("Premium", 250, 30, "A"));
+        manager.AdaugaTip(new TipAbonament("Supporter", 50, 30, "C"));
     }
-}
-else
-{
-    consoleOut.WriteLine("Login esuat sau anulat.");
+    
 }

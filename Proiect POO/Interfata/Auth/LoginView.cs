@@ -1,27 +1,27 @@
-﻿using Proiect_POO;
-using Proiect_POO.Entities;
-using Proiect_POO.Services;
-
-namespace Interfata.Auth;
-
-public class LoginView
-{
-    private readonly IAuthService _authService;
-
-    public LoginView(IAuthService authService)
-    {
-        _authService = authService;
-    }
-
-    public User? Login()
-    {
-        Console.Write("Email: ");
-        var email = Console.ReadLine();
-
-        Console.Write("Parola: ");
-        var password = Console.ReadLine();
-
-        return _authService.Login(email!, password!);
-    }
-}
-
+﻿// using Proiect_POO;
+// using Proiect_POO.Entities;
+// using Proiect_POO.Services;
+//
+// namespace Interfata.Auth;
+//
+// public class LoginView
+// {
+//     private readonly IAuthService _authService;
+//
+//     public LoginView(IAuthService authService)
+//     {
+//         _authService = authService;
+//     }
+//
+//     public User? Login()
+//     {
+//         Console.Write("Email: ");
+//         var email = Console.ReadLine();
+//
+//         Console.Write("Parola: ");
+//         var password = Console.ReadLine();
+//
+//         return _authService.Login(email!, password!);
+//     }
+// }
+//
