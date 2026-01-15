@@ -29,8 +29,8 @@ public class AdminMenu
         {
             Console.Clear();
             Console.WriteLine($"--- PANOU ADMIN ({_admin.Username}) ---");
-            Console.WriteLine("1. GESTIONARE PARCARI (Adauga/Sterge)");
-            Console.WriteLine("2. GESTIONARE ABONAMENTE (Adauga/Sterge)");
+            Console.WriteLine("1. Gestionare parcari (Adauga/Sterge)");
+            Console.WriteLine("2. Gestionare abonamente (Adauga/Sterge)");
             Console.WriteLine("0. Iesire");
             Console.Write("Optiune: ");
             var optiune = Console.ReadLine();
@@ -38,7 +38,7 @@ public class AdminMenu
             switch (optiune)
             {
                 case "1":
-                    Console.WriteLine("\nPARCARI:");
+                    Console.WriteLine("\Parcari:");
                     MeniuParcari();
                     break;
                 case "2":
@@ -59,7 +59,7 @@ public class AdminMenu
     
     private void MeniuParcari()
     {
-        Console.WriteLine("\n--- PARCARI ---");
+        Console.WriteLine("\n--- Parcari ---");
         _manager.Parcari.ForEach(p => Console.WriteLine($"- {p}"));
         
         Console.WriteLine("\n[A]dauga parcare | [S]terge parcare | [I]napoi");
