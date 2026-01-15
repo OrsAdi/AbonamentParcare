@@ -1,4 +1,5 @@
-﻿using Proiect_POO.Entities;
+﻿using Proiect_POO;
+using Proiect_POO.Entities;
 
 namespace Interfata.Menus;
 

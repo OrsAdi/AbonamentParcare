@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Infrastructura.Configuration;
 using Proiect_POO; // Referinta catre Core pentru entitati daca e nevoie
 
 namespace Infrastructura.Persistence;
