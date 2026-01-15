@@ -1,4 +1,6 @@
-﻿namespace Proiect_POO;
+﻿using System.Linq;
+
+namespace Proiect_POO;
 
 class Program
 {
@@ -51,7 +53,8 @@ class Program
             Console.WriteLine("1. Vezi toate parcarile");
             Console.WriteLine("2. Vezi tipurile de abonament existente");
             Console.WriteLine("3. ADAUGA un tip nou de abonament");
-            Console.WriteLine("4. Logout");
+            Console.WriteLine("4. ADAUGA o parcare noua");
+            Console.WriteLine("5. Logout");
             Console.Write("Alege: ");
             var optiune = Console.ReadLine();
 
@@ -69,6 +72,9 @@ class Program
                     AdaugaTipAbonament(manager);
                     break;
                 case "4":
+                    AdaugaParcare(manager);
+                    break;
+                case "5":
                     return;
                 default:
                     Console.WriteLine("Optiune invalida!");
@@ -76,6 +82,29 @@ class Program
             }
             Console.WriteLine("\nApasa orice tasta pentru a continua...");
             Console.ReadKey();
+        }
+    }
+
+    static void AdaugaParcare(SubscriptionManager manager)
+    {
+        Console.WriteLine("\n--- ADAUGARE PARCARE NOUA ---");
+
+        Console.Write("Nume parcare: ");
+        string nume = Console.ReadLine();
+
+        Console.Write("Zona (ex: A, B, Centru): ");
+        string zona = Console.ReadLine();
+
+        Console.Write("Capacitate (nr locuri): ");
+        if (int.TryParse(Console.ReadLine(), out int capacitate))
+        {
+            var parcareNoua = new Parcare(nume, zona, capacitate);
+            manager.AdaugaParcare(parcareNoua);
+            Console.WriteLine("Succes! Parcarea a fost adaugata.");
+        }
+        else
+        {
+            Console.WriteLine("Capacitate invalida!");
         }
     }
 
@@ -111,7 +140,7 @@ class Program
             Console.Clear();
             Console.WriteLine($"--- BINE AI VENIT, {client.Username} ---");
             Console.WriteLine("1. Vezi abonamentele mele active");
-            Console.WriteLine("2. CUMPARA un abonament nou");
+            Console.WriteLine("2. CUMPARA un abonament (Alege parcare)");
             Console.WriteLine("3. Logout");
             Console.Write("Alege: ");
             var optiune = Console.ReadLine();
@@ -147,31 +176,70 @@ class Program
             foreach (var ab in client.Abonamente)
             {
                 var dataExpirare = ab.DataStart.AddDays(ab.Tip.ValabilitateZile);
-                Console.WriteLine($"- {ab.Tip.Nume} | Zona {ab.Tip.ZonaPermisa} | Expira la: {dataExpirare:dd/MM/yyyy}");
+                string status = ab.EsteExpirat() ? "[EXPIRAT]" : "[ACTIV]";
+                Console.WriteLine($"{status} {ab.Tip.Nume} | Zona {ab.Tip.ZonaPermisa} | Expira la: {dataExpirare:dd/MM/yyyy}");
             }
         }
     }
 
     static void CumparaAbonamentMeniu(Client client, SubscriptionManager manager)
     {
-        Console.WriteLine("\n--- OFERTA DISPONIBILA ---");
-        for (int i = 0; i < manager.Tipuri.Count; i++)
+        Console.WriteLine("\n--- ALEGE PARCAREA DORITA ---");
+        
+        if (manager.Parcari.Count == 0)
         {
-            Console.WriteLine($"{i + 1}. {manager.Tipuri[i]}");
+            Console.WriteLine("Nu exista parcari in sistem.");
+            return;
         }
 
-        Console.Write("\nAlege numarul abonamentului dorit (sau 0 pentru anulare): ");
-        if (int.TryParse(Console.ReadLine(), out int index) && index > 0 && index <= manager.Tipuri.Count)
+        for (int i = 0; i < manager.Parcari.Count; i++)
         {
-            var tipAles = manager.Tipuri[index - 1];
-            manager.CumparaAbonament(client, tipAles);
-            
-            Console.WriteLine($"\nFelicitari! Ai cumparat abonamentul {tipAles.Nume}.");
-            Console.WriteLine($"Este valabil 30 de zile, pana la: {DateTime.Now.AddDays(30):dd/MM/yyyy}");
+            Console.WriteLine($"{i + 1}. {manager.Parcari[i].Nume} (Zona {manager.Parcari[i].Zona})");
         }
-        else if (index != 0)
+
+        Console.Write("\nIntrodu numarul parcarii: ");
+        if (int.TryParse(Console.ReadLine(), out int indexParcare) && indexParcare > 0 && indexParcare <= manager.Parcari.Count)
         {
-            Console.WriteLine("Optiune invalida.");
+            var parcareAleasa = manager.Parcari[indexParcare - 1];
+            Console.WriteLine($"\nAi ales parcarea: {parcareAleasa.Nume}. Cautam oferte disponibile...");
+
+            var toateAbonamenteleZona = manager.Tipuri
+                .Where(t => t.ZonaPermisa == parcareAleasa.Zona)
+                .ToList();
+
+            var oferteValide = toateAbonamenteleZona
+                .Where(tip => !client.Abonamente.Any(a => a.Tip.Nume == tip.Nume && a.Activ && !a.EsteExpirat()))
+                .ToList();
+
+            if (oferteValide.Count == 0)
+            {
+                Console.WriteLine($"\nAi deja toate abonamentele disponibile pentru Zona {parcareAleasa.Zona} (sau nu exista oferte).");
+                return;
+            }
+
+            Console.WriteLine($"\n--- OFERTE DISPONIBILE PENTRU TINE (ZONA {parcareAleasa.Zona}) ---");
+            for (int i = 0; i < oferteValide.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {oferteValide[i]}");
+            }
+
+            Console.Write("\nAlege abonamentul dorit: ");
+            if (int.TryParse(Console.ReadLine(), out int indexAb) && indexAb > 0 && indexAb <= oferteValide.Count)
+            {
+                var tipAles = oferteValide[indexAb - 1];
+                manager.CumparaAbonament(client, tipAles);
+
+                Console.WriteLine($"\nSucces! Ai cumparat abonamentul {tipAles.Nume}.");
+                Console.WriteLine($"Valabil pana la: {DateTime.Now.AddDays(30):dd/MM/yyyy}");
+            }
+            else
+            {
+                Console.WriteLine("Optiune invalida.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Parcare invalida.");
         }
     }
 
@@ -183,8 +251,10 @@ class Program
 
         manager.AdaugaParcare(new Parcare("Central Parking", "A", 100));
         manager.AdaugaParcare(new Parcare("Mall Parking", "B", 500));
+        manager.AdaugaParcare(new Parcare("Stadion Arena", "C", 2000));
 
         manager.AdaugaTip(new TipAbonament("Standard", 100, 30, "B"));
-        manager.AdaugaTip(new TipAbonament("VIP", 250, 30, "A"));
+        manager.AdaugaTip(new TipAbonament("Premium", 250, 30, "A"));
+        manager.AdaugaTip(new TipAbonament("Supporter", 50, 30, "C"));
     }
 }
