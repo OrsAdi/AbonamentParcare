@@ -38,7 +38,7 @@ public class AdminMenu
             switch (optiune)
             {
                 case "1":
-                    Console.WriteLine("\Parcari:");
+                    Console.WriteLine("Parcari:");
                     MeniuParcari();
                     break;
                 case "2":
